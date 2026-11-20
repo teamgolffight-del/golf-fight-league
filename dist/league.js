@@ -238,9 +238,9 @@
       const current = find('[data-view="' + view + '"]');
       const heading = current.querySelector("h2");
       heading.tabIndex = -1;
-      heading.focus();
+      heading.focus({ preventScroll: true });
     }
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }
 
   for (const button of root.querySelectorAll("[data-go]")) {

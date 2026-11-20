@@ -19,7 +19,7 @@
     padding: 16px 0;
   }
   #gfl-inline-demo * { box-sizing: border-box; }
-  #gfl-inline-demo [hidden] { display: none; }
+  #gfl-inline-demo [hidden] { display: none !important; }
   #gfl-inline-demo .gfl-app {
     max-width: 420px;
     margin: 0 auto;
@@ -613,8 +613,11 @@
       else item.removeAttribute("aria-current");
     }
     if (moveFocus) {
-      root.querySelector('nav [data-go="' + view + '"]').focus();
+      const heading = find('[data-view="' + view + '"] h2');
+      heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
     }
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }
 
   for (const button of root.querySelectorAll("[data-go]")) {
