@@ -117,13 +117,13 @@
   #gfl-inline-demo nav {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    border-top: 1px solid var(--gfl-line);
+    border-bottom: 1px solid var(--gfl-line);
     background: var(--gfl-panel);
   }
   #gfl-inline-demo nav button {
     min-height: 58px;
     border: 0;
-    border-top: 2px solid transparent;
+    border-bottom: 2px solid transparent;
     background: transparent;
     padding: 5px 0;
     color: var(--gfl-muted);
@@ -193,6 +193,12 @@
     background-repeat: no-repeat;
   }
   #gfl-inline-demo :focus-visible { outline: 2px solid var(--gfl-green); outline-offset: -2px; }
+  @media (max-width: 600px) {
+    html { scroll-padding-top: 50px; }
+    #gfl-inline-demo .gfl-app { overflow: clip; }
+    #gfl-inline-demo nav { position: sticky; top: 0; z-index: 1; }
+    #gfl-inline-demo nav button { min-height: 48px; }
+  }
   @media (max-width: 420px) {
     #gfl-inline-demo { padding: 0; }
     #gfl-inline-demo .gfl-app { border: 0; border-radius: 0; }
@@ -211,6 +217,13 @@
       <p class="gfl-small">Démonstration · Parties fictives<br>Les essais restent dans ce navigateur.</p>
       <label class="gfl-field">Profil de test<select id="gfl-demo-player" disabled></select></label>
     </header>
+    <nav aria-label="Navigation principale">
+      <button type="button" data-go="home" aria-current="page">Accueil</button>
+      <button type="button" data-go="new">Nouvelle</button>
+      <button type="button" data-go="ranking">Classement</button>
+      <button type="button" data-go="history">Historique</button>
+      <button type="button" data-go="profile">Ma fiche</button>
+    </nav>
     <p id="gfl-app-alert" class="gfl-feedback gfl-app-alert" role="status">Chargement de la League…</p>
 
     <section class="gfl-view gfl-stack" data-view="home" aria-label="Accueil">
@@ -293,13 +306,6 @@
       <button class="gfl-link" data-go="history" data-player="x-factor" type="button">Voir mes confrontations</button>
     </section>
 
-    <nav aria-label="Navigation principale">
-      <button type="button" data-go="home" aria-current="page">Accueil</button>
-      <button type="button" data-go="new">Nouvelle</button>
-      <button type="button" data-go="ranking">Classement</button>
-      <button type="button" data-go="history">Historique</button>
-      <button type="button" data-go="profile">Ma fiche</button>
-    </nav>
   </div>
 </div>
 
