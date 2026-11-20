@@ -165,7 +165,9 @@
       const isFull = body.dataset.ranking === "full";
       for (const player of isFull ? standings : standings.slice(0, 4)) {
         const row = body.insertRow();
-        row.insertCell().textContent = player.rank;
+        const rankCell = row.insertCell();
+        rankCell.textContent = player.rank;
+        if (player.rank <= 3) rankCell.className = "gfl-podium-rank";
         const name = document.createElement("th");
         name.scope = "row";
         name.textContent = player.alias;

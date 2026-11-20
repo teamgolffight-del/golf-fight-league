@@ -6,15 +6,16 @@
 <meta name="robots" content="noindex, nofollow">
 <title>GOLF FIGHT LEAGUE · Démonstration</title>
 <style>
-  body { margin: 0; background: #101210; }
+  body { margin: 0; background: #10110f; }
   #gfl-inline-demo {
-    --gfl-ink: #fcf7ee;
-    --gfl-muted: #c1bcb4;
-    --gfl-shell: #181918;
-    --gfl-panel: #232522;
-    --gfl-line: #41433d;
-    --gfl-green: #c4edab;
-    --gfl-pink: #ff6eaf;
+    --gfl-ink: #fff8ed;
+    --gfl-muted: #c6beb3;
+    --gfl-shell: #151614;
+    --gfl-panel: #20221e;
+    --gfl-line: #41433b;
+    --gfl-green: #bce6a7;
+    --gfl-pink: #ff519e;
+    --gfl-gold: #f1ca82;
     padding: 16px 0;
   }
   #gfl-inline-demo * { box-sizing: border-box; }
@@ -30,7 +31,33 @@
     color-scheme: dark;
     font: 400 15px/1.45 system-ui, sans-serif;
   }
-  #gfl-inline-demo header { padding: 21px 18px 15px; border-bottom: 1px solid var(--gfl-line); }
+  #gfl-inline-demo header {
+    padding: 21px 18px 15px;
+    border-bottom: 1px solid #685032;
+    background: linear-gradient(135deg, #241e17, #10110f 66%);
+  }
+  #gfl-inline-demo .gfl-podium-rank { color: var(--gfl-gold); font-weight: 700; }
+  #gfl-inline-demo .gfl-identity { display: flex; align-items: center; gap: 12px; }
+  #gfl-inline-demo .gfl-crest {
+    display: block;
+    width: 52px;
+    height: auto;
+    flex-shrink: 0;
+    border-radius: 6px;
+  }
+  #gfl-inline-demo:has([data-view="home"]:not([hidden])) header {
+    background: radial-gradient(ellipse at 50% 20%, #080808, #10110f 78%);
+  }
+  #gfl-inline-demo:has([data-view="home"]:not([hidden])) .gfl-identity { justify-content: center; }
+  #gfl-inline-demo:has([data-view="home"]:not([hidden])) .gfl-crest { width: min(48vw, 176px); }
+  #gfl-inline-demo:has([data-view="home"]:not([hidden])) .gfl-brand {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
   #gfl-inline-demo .gfl-brand {
     margin: 0;
     color: var(--gfl-ink);
@@ -40,7 +67,7 @@
     letter-spacing: -.07em;
     line-height: 1;
   }
-  #gfl-inline-demo .gfl-brand span { color: var(--gfl-pink); }
+  #gfl-inline-demo .gfl-brand span { color: var(--gfl-gold); }
   #gfl-inline-demo .gfl-view { min-height: 402px; padding: 16px 16px 19px; }
   #gfl-inline-demo h2, #gfl-inline-demo h3, #gfl-inline-demo p { margin: 0; }
   #gfl-inline-demo h2 { font-size: 22px; font-weight: 760; line-height: 1.2; }
@@ -146,13 +173,14 @@
   #gfl-inline-demo { padding: clamp(0px, 4vw, 32px) 0; }
   #gfl-inline-demo .gfl-app { max-width: 480px; font-size: 16px; }
   #gfl-inline-demo .gfl-small { font-size: 13px; }
-  #gfl-inline-demo header p + p { margin-top: 5px; }
+  #gfl-inline-demo header > p { margin-top: 8px; }
   #gfl-inline-demo header .gfl-field { margin-top: 10px; grid-template-columns: 1fr 1fr; align-items: center; }
   #gfl-inline-demo .gfl-app-alert { padding: 0 16px; overflow-wrap: anywhere; }
   #gfl-inline-demo textarea { width: 100%; min-height: 70px; padding: 8px; border: 1px solid var(--gfl-line);
     border-radius: 8px; background: var(--gfl-panel); color: var(--gfl-ink); font: inherit; }
   #gfl-inline-demo summary { min-height: 44px; align-content: center; color: var(--gfl-pink); }
   #gfl-inline-demo .gfl-field, #gfl-inline-demo .gfl-check, #gfl-inline-demo legend { font-size: 14px; }
+  #gfl-inline-demo .gfl-check span { overflow-wrap: anywhere; }
   #gfl-inline-demo .gfl-view { min-height: 0; }
   #gfl-inline-demo td, #gfl-inline-demo th[scope="row"] { overflow-wrap: anywhere; }
   #gfl-inline-demo .gfl-field select {
@@ -176,7 +204,10 @@
 <div id="gfl-inline-demo">
   <div class="gfl-app">
     <header>
-      <p class="gfl-brand">GOLF FIGHT <span>LEAGUE</span></p>
+      <div class="gfl-identity">
+        <img class="gfl-crest" src="golf-fight-league-logo.webp" alt="" width="560" height="560">
+        <p class="gfl-brand">GOLF FIGHT <span>LEAGUE</span></p>
+      </div>
       <p class="gfl-small">Démonstration · Parties fictives<br>Les essais restent dans ce navigateur.</p>
       <label class="gfl-field">Profil de test<select id="gfl-demo-player" disabled></select></label>
     </header>
@@ -513,7 +544,9 @@
       const isFull = body.dataset.ranking === "full";
       for (const player of isFull ? standings : standings.slice(0, 4)) {
         const row = body.insertRow();
-        row.insertCell().textContent = player.rank;
+        const rankCell = row.insertCell();
+        rankCell.textContent = player.rank;
+        if (player.rank <= 3) rankCell.className = "gfl-podium-rank";
         const name = document.createElement("th");
         name.scope = "row";
         name.textContent = player.alias;

@@ -8,11 +8,12 @@ const assets = new Map([
   ["/index.html", ["index.html", "text/html"]],
   ["/league-data.js", ["league-data.js", "text/javascript"]],
   ["/league.js", ["league.js", "text/javascript"]],
+  ["/golf-fight-league-logo.webp", ["golf-fight-league-logo.webp", "image/webp"]],
 ]);
 
 function reply(response, code, type, data) {
   response.writeHead(code, {
-    "Content-Type": type + "; charset=utf-8",
+    "Content-Type": type.startsWith("image/") ? type : type + "; charset=utf-8",
     "Cache-Control": "no-store",
     "X-Content-Type-Options": "nosniff",
   });

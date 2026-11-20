@@ -6,13 +6,14 @@
 <title>GOLF FIGHT LEAGUE</title>
 <style>
   #gfl-preview {
-    --gfl-ink: #fcf7ee;
-    --gfl-muted: #c1bcb4;
-    --gfl-shell: #181918;
-    --gfl-panel: #232522;
-    --gfl-line: #41433d;
-    --gfl-green: #c4edab;
-    --gfl-pink: #ff6eaf;
+    --gfl-ink: #fff8ed;
+    --gfl-muted: #c6beb3;
+    --gfl-shell: #151614;
+    --gfl-panel: #20221e;
+    --gfl-line: #41433b;
+    --gfl-green: #bce6a7;
+    --gfl-pink: #ff519e;
+    --gfl-gold: #f1ca82;
     padding: 16px 0;
   }
   #gfl-preview * { box-sizing: border-box; }
@@ -28,7 +29,33 @@
     color-scheme: dark;
     font: 400 15px/1.45 system-ui, sans-serif;
   }
-  #gfl-preview header { padding: 21px 18px 15px; border-bottom: 1px solid var(--gfl-line); }
+  #gfl-preview header {
+    padding: 21px 18px 15px;
+    border-bottom: 1px solid #685032;
+    background: linear-gradient(135deg, #241e17, #10110f 66%);
+  }
+  #gfl-preview .gfl-podium-rank { color: var(--gfl-gold); font-weight: 700; }
+  #gfl-preview .gfl-identity { display: flex; align-items: center; gap: 12px; }
+  #gfl-preview .gfl-crest {
+    display: block;
+    width: 52px;
+    height: auto;
+    flex-shrink: 0;
+    border-radius: 6px;
+  }
+  #gfl-preview:has([data-view="home"]:not([hidden])) header {
+    background: radial-gradient(ellipse at 50% 20%, #080808, #10110f 78%);
+  }
+  #gfl-preview:has([data-view="home"]:not([hidden])) .gfl-identity { justify-content: center; }
+  #gfl-preview:has([data-view="home"]:not([hidden])) .gfl-crest { width: min(48vw, 176px); }
+  #gfl-preview:has([data-view="home"]:not([hidden])) .gfl-brand {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
   #gfl-preview .gfl-brand {
     margin: 0;
     color: var(--gfl-ink);
@@ -38,7 +65,7 @@
     letter-spacing: -.07em;
     line-height: 1;
   }
-  #gfl-preview .gfl-brand span { color: var(--gfl-pink); }
+  #gfl-preview .gfl-brand span { color: var(--gfl-gold); }
   #gfl-preview .gfl-view { min-height: 402px; padding: 16px 16px 19px; }
   #gfl-preview h2, #gfl-preview h3, #gfl-preview p { margin: 0; }
   #gfl-preview h2 { font-size: 22px; font-weight: 760; line-height: 1.2; }
@@ -141,17 +168,18 @@
   #gfl-preview .gfl-feedback:empty { display: none; }
   #gfl-preview .gfl-feedback[data-error] { color: #ffacd2; }
 
-  body { margin: 0; background: #101210; }
+  body { margin: 0; background: #10110f; }
   #gfl-preview { padding: clamp(0px, 4vw, 32px) 0; }
   #gfl-preview .gfl-app { max-width: 480px; font-size: 16px; }
   #gfl-preview .gfl-small { font-size: 13px; }
-  #gfl-preview header p + p { margin-top: 5px; }
+  #gfl-preview header > p { margin-top: 8px; }
   #gfl-preview header .gfl-field { margin-top: 10px; grid-template-columns: 1fr 1fr; align-items: center; }
   #gfl-preview .gfl-app-alert { padding: 0 16px; overflow-wrap: anywhere; }
   #gfl-preview textarea { width: 100%; min-height: 70px; padding: 8px; border: 1px solid var(--gfl-line);
     border-radius: 8px; background: var(--gfl-panel); color: var(--gfl-ink); font: inherit; }
   #gfl-preview summary { min-height: 44px; align-content: center; color: var(--gfl-pink); }
   #gfl-preview .gfl-field, #gfl-preview .gfl-check, #gfl-preview legend { font-size: 14px; }
+  #gfl-preview .gfl-check span { overflow-wrap: anywhere; }
   #gfl-preview .gfl-view { min-height: min(480px, 70dvh); }
   #gfl-preview td, #gfl-preview th[scope="row"] { overflow-wrap: anywhere; }
   #gfl-preview .gfl-field select {
@@ -176,7 +204,10 @@
 <div id="gfl-preview">
   <div class="gfl-app">
     <header>
-      <p class="gfl-brand">GOLF FIGHT <span>LEAGUE</span></p>
+      <div class="gfl-identity">
+        <img class="gfl-crest" src="golf-fight-league-logo.webp" alt="" width="560" height="560">
+        <p class="gfl-brand">GOLF FIGHT <span>LEAGUE</span></p>
+      </div>
       <p class="gfl-small">Prototype local · Données fictives</p>
       <label class="gfl-field">Profil de test<select id="gfl-demo-player" disabled></select></label>
     </header>
