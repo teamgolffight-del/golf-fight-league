@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GOLF FIGHT LEAGUE</title>
+<style>
+  #gfl-preview {
+    --gfl-ink: #fcf7ee;
+    --gfl-muted: #c1bcb4;
+    --gfl-shell: #181918;
+    --gfl-panel: #232522;
+    --gfl-line: #41433d;
+    --gfl-green: #c4edab;
+    --gfl-pink: #ff6eaf;
+    padding: 16px 0;
+  }
+  #gfl-preview * { box-sizing: border-box; }
+  #gfl-preview [hidden] { display: none; }
+  #gfl-preview .gfl-app {
+    max-width: 420px;
+    margin: 0 auto;
+    overflow: hidden;
+    border: 1px solid var(--gfl-line);
+    border-radius: 23px;
+    background: var(--gfl-shell);
+    color: var(--gfl-ink);
+    color-scheme: dark;
+    font: 400 15px/1.45 system-ui, sans-serif;
+  }
+  #gfl-preview header { padding: 21px 18px 15px; border-bottom: 1px solid var(--gfl-line); }
+  #gfl-preview .gfl-brand {
+    margin: 0;
+    color: var(--gfl-ink);
+    font-size: 25px;
+    font-weight: 850;
+    font-style: italic;
+    letter-spacing: -.07em;
+    line-height: 1;
+  }
+  #gfl-preview .gfl-brand span { color: var(--gfl-pink); }
+  #gfl-preview .gfl-view { min-height: 402px; padding: 16px 16px 19px; }
+  #gfl-preview h2, #gfl-preview h3, #gfl-preview p { margin: 0; }
+  #gfl-preview h2 { font-size: 22px; font-weight: 760; line-height: 1.2; }
+  #gfl-preview h3 { font-size: 16px; font-weight: 730; line-height: 1.3; }
+  #gfl-preview .gfl-stack { display: grid; gap: 15px; }
+  #gfl-preview .gfl-box {
+    padding: 13px;
+    border: 1px solid var(--gfl-line);
+    border-radius: 13px;
+    background: var(--gfl-panel);
+  }
+  #gfl-preview .gfl-box > * + * { margin-top: 6px; }
+  #gfl-preview .gfl-lineup, #gfl-preview .gfl-section-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px 8px;
+  }
+  #gfl-preview .gfl-small { color: var(--gfl-muted); font-size: 12px; }
+  #gfl-preview .gfl-win { color: var(--gfl-green); font-weight: 660; }
+  #gfl-preview button, #gfl-preview input, #gfl-preview select {
+    max-width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    font: inherit;
+  }
+  #gfl-preview button { color: inherit; }
+  #gfl-preview .gfl-action {
+    width: 100%;
+    min-height: 48px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--gfl-pink);
+    color: #24111a;
+    font-weight: 780;
+  }
+  #gfl-preview .gfl-link {
+    border: 0;
+    background: transparent;
+    color: var(--gfl-pink);
+    padding: 0 4px;
+    font-size: 13px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  #gfl-preview nav {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    border-top: 1px solid var(--gfl-line);
+    background: var(--gfl-panel);
+  }
+  #gfl-preview nav button {
+    min-height: 58px;
+    border: 0;
+    border-top: 2px solid transparent;
+    background: transparent;
+    padding: 5px 0;
+    color: var(--gfl-muted);
+    font-size: 11px;
+    font-weight: 620;
+  }
+  #gfl-preview nav button[aria-current="page"] { border-color: var(--gfl-pink); color: var(--gfl-pink); }
+  #gfl-preview nav i, #gfl-preview nav svg { display: block; margin: 0 auto 4px; }
+  #gfl-preview table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  #gfl-preview th, #gfl-preview td { padding: 7px 4px; border-bottom: 1px solid var(--gfl-line); }
+  #gfl-preview thead { color: var(--gfl-muted); font-size: 12px; }
+  #gfl-preview th, #gfl-preview td { text-align: right; }
+  #gfl-preview th[scope="row"], #gfl-preview .gfl-alias { text-align: left; }
+  #gfl-preview th:last-child, #gfl-preview td:last-child { padding-right: 0; }
+  #gfl-preview label { min-width: 0; }
+  #gfl-preview .gfl-field { display: grid; gap: 5px; font-size: 13px; }
+  #gfl-preview .gfl-field :is(select, input) {
+    width: 100%;
+    border: 1px solid var(--gfl-line);
+    border-radius: 8px;
+    padding: 0 7px;
+    background: var(--gfl-panel);
+    color: var(--gfl-ink);
+    font-size: 16px;
+  }
+  #gfl-preview fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+  #gfl-preview legend { margin-bottom: 6px; padding: 0; font-size: 13px; }
+  #gfl-preview .gfl-pair, #gfl-preview .gfl-players { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  #gfl-preview .gfl-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    border: 1px solid var(--gfl-line);
+    border-radius: 8px;
+    padding: 0 7px;
+    background: var(--gfl-panel);
+    font-size: 13px;
+  }
+  #gfl-preview .gfl-check input { min-height: 0; accent-color: var(--gfl-pink); }
+  #gfl-preview .gfl-teams { display: grid; gap: 8px; }
+  #gfl-preview .gfl-teams label { display: grid; align-items: center; grid-template-columns: 1fr 1fr; }
+  #gfl-preview .gfl-feedback { color: var(--gfl-green); min-height: 1.4em; }
+  #gfl-preview .gfl-feedback:empty { display: none; }
+  #gfl-preview .gfl-feedback[data-error] { color: #ffacd2; }
+
+  body { margin: 0; background: #101210; }
+  #gfl-preview { padding: clamp(0px, 4vw, 32px) 0; }
+  #gfl-preview .gfl-app { max-width: 480px; font-size: 16px; }
+  #gfl-preview .gfl-small { font-size: 13px; }
+  #gfl-preview header p + p { margin-top: 5px; }
+  #gfl-preview header .gfl-field { margin-top: 10px; grid-template-columns: 1fr 1fr; align-items: center; }
+  #gfl-preview .gfl-app-alert { padding: 0 16px; overflow-wrap: anywhere; }
+  #gfl-preview textarea { width: 100%; min-height: 70px; padding: 8px; border: 1px solid var(--gfl-line);
+    border-radius: 8px; background: var(--gfl-panel); color: var(--gfl-ink); font: inherit; }
+  #gfl-preview summary { min-height: 44px; align-content: center; color: var(--gfl-pink); }
+  #gfl-preview .gfl-field, #gfl-preview .gfl-check, #gfl-preview legend { font-size: 14px; }
+  #gfl-preview .gfl-view { min-height: min(480px, 70dvh); }
+  #gfl-preview td, #gfl-preview th[scope="row"] { overflow-wrap: anywhere; }
+  #gfl-preview .gfl-field select {
+    appearance: none;
+    padding-right: 22px;
+    background-image: linear-gradient(45deg, transparent 50%, var(--gfl-muted) 50%),
+      linear-gradient(135deg, var(--gfl-muted) 50%, transparent 50%);
+    background-position: calc(100% - 12px) 50%, calc(100% - 7px) 50%;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+  }
+  #gfl-preview :focus-visible { outline: 2px solid var(--gfl-green); outline-offset: -2px; }
+  @media (max-width: 420px) {
+    #gfl-preview { padding: 0; }
+    #gfl-preview .gfl-app { min-height: 100dvh; border: 0; border-radius: 0; }
+  }
+</style>
+</head>
+<body>
+
+
+<div id="gfl-preview">
+  <div class="gfl-app">
+    <header>
+      <p class="gfl-brand">GOLF FIGHT <span>LEAGUE</span></p>
+      <p class="gfl-small">Prototype local · Données fictives</p>
+      <label class="gfl-field">Profil de test<select id="gfl-demo-player" disabled></select></label>
+    </header>
+    <p id="gfl-app-alert" class="gfl-feedback gfl-app-alert" role="status">Chargement de la League…</p>
+
+    <section class="gfl-view gfl-stack" data-view="home" aria-label="Accueil">
+      <button class="gfl-action" data-go="new" type="button">Nouvelle partie</button>
+      <p id="gfl-save-status" class="gfl-feedback" role="status"></p>
+      <section class="gfl-box" aria-label="Dernière confrontation">
+        <div class="gfl-lineup"><h3>Dernière confrontation</h3><time id="gfl-last-date" class="gfl-small"></time></div>
+        <p id="gfl-last-info"></p>
+        <p id="gfl-last-winners" class="gfl-win"></p>
+      </section>
+      <section aria-label="Classement synthétique">
+        <div class="gfl-section-head">
+          <h2>Classement</h2>
+          <button class="gfl-link" data-go="ranking" type="button">Voir les 8 joueurs</button>
+        </div>
+        <table aria-label="Premiers du classement">
+          <thead><tr><th scope="col">Rang</th><th scope="col" class="gfl-alias">Joueur</th><th scope="col">Victoires</th></tr></thead>
+          <tbody data-ranking="summary"></tbody>
+        </table>
+      </section>
+    </section>
+
+    <section class="gfl-view gfl-stack" data-view="new" aria-label="Nouvelle partie" hidden>
+      <h2>Nouvelle partie</h2>
+      <form class="gfl-stack" id="gfl-example-form">
+        <div class="gfl-pair">
+          <label class="gfl-field">Date<input type="date" name="date" required></label>
+          <label class="gfl-field">Formule<select name="formula" required>
+            <option value="">Choisir</option><option>Scramble</option><option>Shamble</option><option>Chouette</option><option>Skins</option><option>Wolf</option>
+          </select></label>
+        </div>
+        <fieldset><legend>Participants</legend><div class="gfl-players" id="gfl-players"></div></fieldset>
+        <label class="gfl-field">Type de résultat<select name="mode">
+          <option value="single">Individuel</option><option value="team">Par équipe</option>
+        </select></label>
+        <fieldset id="gfl-team-fields"><legend>Équipes</legend><div class="gfl-teams" id="gfl-teams"></div></fieldset>
+        <label class="gfl-field"><span id="gfl-winner-label">Équipe gagnante</span><select name="winner" required></select></label>
+        <button class="gfl-action" type="submit">Vérifier le résultat</button>
+        <p id="gfl-game-feedback" class="gfl-feedback" role="status"></p>
+        <button class="gfl-action" id="gfl-confirm-game" type="button" hidden>Enregistrer la partie</button>
+      </form>
+    </section>
+
+    <section class="gfl-view gfl-stack" data-view="ranking" aria-label="Classement" hidden>
+      <h2>Classement</h2>
+      <table aria-label="Classement des huit joueurs">
+        <thead><tr><th scope="col">Rang</th><th scope="col" class="gfl-alias">Joueur</th><th scope="col">Victoires</th><th scope="col">Parties</th><th scope="col">Taux</th></tr></thead>
+        <tbody data-ranking="full"></tbody>
+      </table>
+    </section>
+
+    <section class="gfl-view gfl-stack" data-view="history" aria-label="Historique" hidden>
+      <h2>Historique</h2>
+      <div class="gfl-pair">
+        <label class="gfl-field">Joueur<select id="gfl-filter-player"><option value="">Tous</option></select></label>
+        <label class="gfl-field">Formule<select id="gfl-filter-formula">
+          <option value="">Toutes</option><option>Scramble</option><option>Shamble</option><option>Chouette</option><option>Skins</option><option>Wolf</option>
+        </select></label>
+      </div>
+      <label class="gfl-field">Période<select id="gfl-filter-period">
+        <option value="">Toutes les dates</option><option value="2026-11">Novembre 2026</option><option value="2026-10">Octobre 2026</option>
+      </select></label>
+      <div class="gfl-stack" id="gfl-history-results" aria-live="polite"></div>
+      <button class="gfl-link" id="gfl-export" type="button" hidden>Exporter les données</button>
+    </section>
+
+    <section class="gfl-view gfl-stack" data-view="profile" aria-label="Ma fiche" hidden>
+      <h2>Ma fiche</h2>
+      <section class="gfl-box" aria-label="Statistiques du profil">
+        <h3 id="gfl-profile-alias"></h3>
+        <p class="gfl-win" id="gfl-profile-stats"></p>
+        <div id="gfl-profile-formats"></div>
+      </section>
+      <form class="gfl-stack" id="gfl-profile-form">
+        <label class="gfl-field">Alias<input name="alias" maxlength="24" required></label>
+        <label class="gfl-field">Devise<input name="motto" maxlength="90"></label>
+        <label class="gfl-field">Présentation<input name="bio" maxlength="240"></label>
+        <button type="submit" class="gfl-action">Enregistrer ma fiche</button>
+        <p class="gfl-feedback" aria-live="polite"></p>
+      </form>
+      <button class="gfl-link" data-go="history" data-player="x-factor" type="button">Voir mes confrontations</button>
+    </section>
+
+    <nav aria-label="Navigation principale">
+      <button type="button" data-go="home" aria-current="page">Accueil</button>
+      <button type="button" data-go="new">Nouvelle</button>
+      <button type="button" data-go="ranking">Classement</button>
+      <button type="button" data-go="history">Historique</button>
+      <button type="button" data-go="profile">Ma fiche</button>
+    </nav>
+  </div>
+</div>
+
+<script src="league-data.js" defer></script>
+<script src="league.js" defer></script>
+</body>
+</html>

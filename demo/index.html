@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>GOLF FIGHT LEAGUE · Démonstration</title>
+<style>
+  body { margin: 0; background: #101210; }
+  #gfl-inline-demo {
+    --gfl-ink: #fcf7ee;
+    --gfl-muted: #c1bcb4;
+    --gfl-shell: #181918;
+    --gfl-panel: #232522;
+    --gfl-line: #41433d;
+    --gfl-green: #c4edab;
+    --gfl-pink: #ff6eaf;
+    padding: 16px 0;
+  }
+  #gfl-inline-demo * { box-sizing: border-box; }
+  #gfl-inline-demo [hidden] { display: none; }
+  #gfl-inline-demo .gfl-app {
+    max-width: 420px;
+    margin: 0 auto;
+    overflow: hidden;
+    border: 1px solid var(--gfl-line);
+    border-radius: 23px;
+    background: var(--gfl-shell);
+    color: var(--gfl-ink);
+    color-scheme: dark;
+    font: 400 15px/1.45 system-ui, sans-serif;
+  }
+  #gfl-inline-demo header { padding: 21px 18px 15px; border-bottom: 1px solid var(--gfl-line); }
+  #gfl-inline-demo .gfl-brand {
+    margin: 0;
+    color: var(--gfl-ink);
+    font-size: 25px;
+    font-weight: 850;
+    font-style: italic;
+    letter-spacing: -.07em;
+    line-height: 1;
+  }
+  #gfl-inline-demo .gfl-brand span { color: var(--gfl-pink); }
+  #gfl-inline-demo .gfl-view { min-height: 402px; padding: 16px 16px 19px; }
+  #gfl-inline-demo h2, #gfl-inline-demo h3, #gfl-inline-demo p { margin: 0; }
+  #gfl-inline-demo h2 { font-size: 22px; font-weight: 760; line-height: 1.2; }
+  #gfl-inline-demo h3 { font-size: 16px; font-weight: 730; line-height: 1.3; }
+  #gfl-inline-demo .gfl-stack { display: grid; gap: 15px; }
+  #gfl-inline-demo .gfl-box {
+    padding: 13px;
+    border: 1px solid var(--gfl-line);
+    border-radius: 13px;
+    background: var(--gfl-panel);
+  }
+  #gfl-inline-demo .gfl-box > * + * { margin-top: 6px; }
+  #gfl-inline-demo .gfl-lineup, #gfl-inline-demo .gfl-section-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px 8px;
+  }
+  #gfl-inline-demo .gfl-small { color: var(--gfl-muted); font-size: 12px; }
+  #gfl-inline-demo .gfl-win { color: var(--gfl-green); font-weight: 660; }
+  #gfl-inline-demo button, #gfl-inline-demo input, #gfl-inline-demo select {
+    max-width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    font: inherit;
+  }
+  #gfl-inline-demo button { color: inherit; }
+  #gfl-inline-demo .gfl-action {
+    width: 100%;
+    min-height: 48px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--gfl-pink);
+    color: #24111a;
+    font-weight: 780;
+  }
+  #gfl-inline-demo .gfl-link {
+    border: 0;
+    background: transparent;
+    color: var(--gfl-pink);
+    padding: 0 4px;
+    font-size: 13px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  #gfl-inline-demo nav {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    border-top: 1px solid var(--gfl-line);
+    background: var(--gfl-panel);
+  }
+  #gfl-inline-demo nav button {
+    min-height: 58px;
+    border: 0;
+    border-top: 2px solid transparent;
+    background: transparent;
+    padding: 5px 0;
+    color: var(--gfl-muted);
+    font-size: 11px;
+    font-weight: 620;
+  }
+  #gfl-inline-demo nav button[aria-current="page"] { border-color: var(--gfl-pink); color: var(--gfl-pink); }
+  #gfl-inline-demo nav i, #gfl-inline-demo nav svg { display: block; margin: 0 auto 4px; }
+  #gfl-inline-demo table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  #gfl-inline-demo th, #gfl-inline-demo td { padding: 7px 4px; border-bottom: 1px solid var(--gfl-line); }
+  #gfl-inline-demo thead { color: var(--gfl-muted); font-size: 12px; }
+  #gfl-inline-demo th, #gfl-inline-demo td { text-align: right; }
+  #gfl-inline-demo th[scope="row"], #gfl-inline-demo .gfl-alias { text-align: left; }
+  #gfl-inline-demo th:last-child, #gfl-inline-demo td:last-child { padding-right: 0; }
+  #gfl-inline-demo label { min-width: 0; }
+  #gfl-inline-demo .gfl-field { display: grid; gap: 5px; font-size: 13px; }
+  #gfl-inline-demo .gfl-field :is(select, input) {
+    width: 100%;
+    border: 1px solid var(--gfl-line);
+    border-radius: 8px;
+    padding: 0 7px;
+    background: var(--gfl-panel);
+    color: var(--gfl-ink);
+    font-size: 16px;
+  }
+  #gfl-inline-demo fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+  #gfl-inline-demo legend { margin-bottom: 6px; padding: 0; font-size: 13px; }
+  #gfl-inline-demo .gfl-pair, #gfl-inline-demo .gfl-players { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  #gfl-inline-demo .gfl-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    border: 1px solid var(--gfl-line);
+    border-radius: 8px;
+    padding: 0 7px;
+    background: var(--gfl-panel);
+    font-size: 13px;
+  }
+  #gfl-inline-demo .gfl-check input { min-height: 0; accent-color: var(--gfl-pink); }
+  #gfl-inline-demo .gfl-teams { display: grid; gap: 8px; }
+  #gfl-inline-demo .gfl-teams label { display: grid; align-items: center; grid-template-columns: 1fr 1fr; }
+  #gfl-inline-demo .gfl-feedback { color: var(--gfl-green); min-height: 1.4em; }
+  #gfl-inline-demo .gfl-feedback:empty { display: none; }
+  #gfl-inline-demo .gfl-feedback[data-error] { color: #ffacd2; }
+
+  #gfl-inline-demo { padding: clamp(0px, 4vw, 32px) 0; }
+  #gfl-inline-demo .gfl-app { max-width: 480px; font-size: 16px; }
+  #gfl-inline-demo .gfl-small { font-size: 13px; }
+  #gfl-inline-demo header p + p { margin-top: 5px; }
+  #gfl-inline-demo header .gfl-field { margin-top: 10px; grid-template-columns: 1fr 1fr; align-items: center; }
+  #gfl-inline-demo .gfl-app-alert { padding: 0 16px; overflow-wrap: anywhere; }
+  #gfl-inline-demo textarea { width: 100%; min-height: 70px; padding: 8px; border: 1px solid var(--gfl-line);
+    border-radius: 8px; background: var(--gfl-panel); color: var(--gfl-ink); font: inherit; }
+  #gfl-inline-demo summary { min-height: 44px; align-content: center; color: var(--gfl-pink); }
+  #gfl-inline-demo .gfl-field, #gfl-inline-demo .gfl-check, #gfl-inline-demo legend { font-size: 14px; }
+  #gfl-inline-demo .gfl-view { min-height: 0; }
+  #gfl-inline-demo td, #gfl-inline-demo th[scope="row"] { overflow-wrap: anywhere; }
+  #gfl-inline-demo .gfl-field select {
+    appearance: none;
+    padding-right: 22px;
+    background-image: linear-gradient(45deg, transparent 50%, var(--gfl-muted) 50%),
+      linear-gradient(135deg, var(--gfl-muted) 50%, transparent 50%);
+    background-position: calc(100% - 12px) 50%, calc(100% - 7px) 50%;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+  }
+  #gfl-inline-demo :focus-visible { outline: 2px solid var(--gfl-green); outline-offset: -2px; }
+  @media (max-width: 420px) {
+    #gfl-inline-demo { padding: 0; }
+    #gfl-inline-demo .gfl-app { border: 0; border-radius: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div id="gfl-inline-demo">
+  <div class="gfl-app">
+    <header>
+      <p class="gfl-brand">GOLF FIGHT <span>LEAGUE</span></p>
+      <p class="gfl-small">Démonstration · Parties fictives<br>Les essais restent dans ce navigateur.</p>
+      <label class="gfl-field">Profil de test<select id="gfl-demo-player" disabled></select></label>
+    </header>
+    <p id="gfl-app-alert" class="gfl-feedback gfl-app-alert" role="status">Chargement de la League…</p>
+
+    <section class="gfl-view gfl-stack" data-view="home" aria-label="Accueil">
+      <button class="gfl-action" data-go="new" type="button">Nouvelle partie</button>
+      <p id="gfl-save-status" class="gfl-feedback" role="status"></p>
+      <section class="gfl-box" aria-label="Dernière confrontation">
+        <div class="gfl-lineup"><h3>Dernière confrontation</h3><time id="gfl-last-date" class="gfl-small"></time></div>
+        <p id="gfl-last-info"></p>
+        <p id="gfl-last-winners" class="gfl-win"></p>
+      </section>
+      <section aria-label="Classement synthétique">
+        <div class="gfl-section-head">
+          <h2>Classement</h2>
+          <button class="gfl-link" data-go="ranking" type="button">Voir les 8 joueurs</button>
+        </div>
+        <table aria-label="Premiers du classement">
+          <thead><tr><th scope="col">Rang</th><th scope="col" class="gfl-alias">Joueur</th><th scope="col">Victoires</th></tr></thead>
+          <tbody data-ranking="summary"></tbody>
+        </table>
+      </section>
+    </section>
+
+    <section class="gfl-view gfl-stack" data-view="new" aria-label="Nouvelle partie" hidden>
+      <h2>Nouvelle partie</h2>
+      <form class="gfl-stack" id="gfl-example-form">
+        <div class="gfl-pair">
+          <label class="gfl-field">Date<input type="date" name="date" required></label>
+          <label class="gfl-field">Formule<select name="formula" required>
+            <option value="">Choisir</option><option>Scramble</option><option>Shamble</option><option>Chouette</option><option>Skins</option><option>Wolf</option>
+          </select></label>
+        </div>
+        <fieldset><legend>Participants</legend><div class="gfl-players" id="gfl-players"></div></fieldset>
+        <label class="gfl-field">Type de résultat<select name="mode">
+          <option value="single">Individuel</option><option value="team">Par équipe</option>
+        </select></label>
+        <fieldset id="gfl-team-fields"><legend>Équipes</legend><div class="gfl-teams" id="gfl-teams"></div></fieldset>
+        <label class="gfl-field"><span id="gfl-winner-label">Équipe gagnante</span><select name="winner" required></select></label>
+        <button class="gfl-action" type="submit">Vérifier le résultat</button>
+        <p id="gfl-game-feedback" class="gfl-feedback" role="status"></p>
+        <button class="gfl-action" id="gfl-confirm-game" type="button" hidden>Enregistrer la partie</button>
+      </form>
+    </section>
+
+    <section class="gfl-view gfl-stack" data-view="ranking" aria-label="Classement" hidden>
+      <h2>Classement</h2>
+      <table aria-label="Classement des huit joueurs">
+        <thead><tr><th scope="col">Rang</th><th scope="col" class="gfl-alias">Joueur</th><th scope="col">Victoires</th><th scope="col">Parties</th><th scope="col">Taux</th></tr></thead>
+        <tbody data-ranking="full"></tbody>
+      </table>
+    </section>
+
+    <section class="gfl-view gfl-stack" data-view="history" aria-label="Historique" hidden>
+      <h2>Historique</h2>
+      <div class="gfl-pair">
+        <label class="gfl-field">Joueur<select id="gfl-filter-player"><option value="">Tous</option></select></label>
+        <label class="gfl-field">Formule<select id="gfl-filter-formula">
+          <option value="">Toutes</option><option>Scramble</option><option>Shamble</option><option>Chouette</option><option>Skins</option><option>Wolf</option>
+        </select></label>
+      </div>
+      <label class="gfl-field">Période<select id="gfl-filter-period">
+        <option value="">Toutes les dates</option><option value="2026-11">Novembre 2026</option><option value="2026-10">Octobre 2026</option>
+      </select></label>
+      <div class="gfl-stack" id="gfl-history-results" aria-live="polite"></div>
+    </section>
+
+    <section class="gfl-view gfl-stack" data-view="profile" aria-label="Ma fiche" hidden>
+      <h2>Ma fiche</h2>
+      <section class="gfl-box" aria-label="Statistiques du profil">
+        <h3 id="gfl-profile-alias"></h3>
+        <p class="gfl-win" id="gfl-profile-stats"></p>
+        <div id="gfl-profile-formats"></div>
+      </section>
+      <form class="gfl-stack" id="gfl-profile-form">
+        <label class="gfl-field">Alias<input name="alias" maxlength="24" required></label>
+        <label class="gfl-field">Devise<input name="motto" maxlength="90"></label>
+        <label class="gfl-field">Présentation<input name="bio" maxlength="240"></label>
+        <button type="submit" class="gfl-action">Enregistrer ma fiche</button>
+        <p class="gfl-feedback" aria-live="polite"></p>
+      </form>
+      <button class="gfl-link" data-go="history" data-player="x-factor" type="button">Voir mes confrontations</button>
+    </section>
+
+    <nav aria-label="Navigation principale">
+      <button type="button" data-go="home" aria-current="page">Accueil</button>
+      <button type="button" data-go="new">Nouvelle</button>
+      <button type="button" data-go="ranking">Classement</button>
+      <button type="button" data-go="history">Historique</button>
+      <button type="button" data-go="profile">Ma fiche</button>
+    </nav>
+  </div>
+</div>
+
+<script>
+(() => {
+  const formats = ["Scramble", "Shamble", "Chouette", "Skins", "Wolf"];
+  const initialPlayers = [
+    { id: "x-factor", alias: "X Factor" },
+    { id: "captain", alias: "Captain" },
+    { id: "foxy", alias: "Foxy" },
+    { id: "nitro", alias: "Nitro" },
+    { id: "lady", alias: "Lady" },
+    { id: "fyzio", alias: "Fyzio" },
+    { id: "sniper", alias: "Sniper" },
+    { id: "kid", alias: "Kid" },
+  ];
+  const examples = [
+    { date: "2026-11-12", formula: "Scramble", groups: [["captain", "foxy"], ["x-factor", "nitro"]], winner: "A" },
+    { date: "2026-11-08", formula: "Wolf", groups: [["x-factor", "captain", "lady", "fyzio", "sniper"]], winner: "x-factor" },
+    { date: "2026-11-01", formula: "Skins", groups: [["nitro", "foxy", "sniper", "kid"]], winner: "nitro" },
+    { date: "2026-10-26", formula: "Scramble", groups: [["captain", "foxy"], ["lady", "kid"]], winner: "A" },
+  ];
+
+  function recordGame({ id, date, formula, groups, winner }) {
+    const timestamp = new Date(typeof date === "string" ? date + "T00:00:00Z" : NaN);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(timestamp.valueOf()) || timestamp.toISOString().slice(0, 10) !== date) {
+      throw new Error("Choisis une date valide.");
+    }
+    if (!formats.includes(formula)) throw new Error("Choisis une formule.");
+    if (!Array.isArray(groups) || !groups.every(Array.isArray)) throw new Error("Choisis les participants.");
+    const participants = groups.flat();
+    if (participants.length < 2) throw new Error("Choisis au moins deux participants.");
+    if (participants.some((id) => !initialPlayers.some((player) => player.id === id))) {
+      throw new Error("Choisis les participants parmi les huit joueurs.");
+    }
+    if (new Set(participants).size !== participants.length) throw new Error("Chaque joueur ne peut participer qu’une fois.");
+    const isTeam = groups.length > 1;
+    if (isTeam && (groups.length !== 2 || groups.some((group) => group.length === 0))) {
+      throw new Error("Répartis les participants dans les deux équipes.");
+    }
+    const winners = isTeam ? groups[["A", "B"].indexOf(winner)] : participants.includes(winner) ? [winner] : [];
+    if (!winners?.length) throw new Error("Choisis le vainqueur.");
+    return {
+      id,
+      date,
+      formula,
+      mode: isTeam ? "team" : "single",
+      participants: groups.flatMap((group, index) => group.map((playerId) => ({
+        playerId,
+        team: isTeam ? ["A", "B"][index] : null,
+        won: winners.includes(playerId),
+        points: winners.includes(playerId) ? 1 : 0,
+      }))),
+    };
+  }
+
+  function summarize(games, playerId) {
+    const results = games.flatMap((game) => game.participants).filter((entry) => entry.playerId === playerId);
+    const wins = results.filter((entry) => entry.won).length;
+    return { wins, played: results.length, rate: results.length ? Math.round(wins * 100 / results.length) : null };
+  }
+
+  function rank(players, games) {
+    const standings = players.map((player) => ({ ...player, ...summarize(games, player.id) }));
+    standings.sort((a, b) => b.wins - a.wins || a.alias.localeCompare(b.alias, "fr"));
+    return standings.map((player) => ({
+      ...player,
+      rank: standings.findIndex((entry) => entry.wins === player.wins) + 1,
+    }));
+  }
+
+  function initialState() {
+    return {
+      players: initialPlayers.map((player) => ({ ...player, motto: "", bio: "" })),
+      games: examples.map((game, index) => recordGame({ ...game, id: "demo-" + index })),
+    };
+  }
+
+  const league = { formats, recordGame, summarize, rank, initialState };
+  globalThis.gflDemoLeague = league;
+})();
+
+(() => {
+  const { rank, recordGame, summarize } = globalThis.gflDemoLeague;
+  const root = document.getElementById("gfl-inline-demo");
+  const find = (selector) => root.querySelector(selector);
+  const nav = root.querySelectorAll("nav [data-go]");
+  const views = root.querySelectorAll("[data-view]");
+  const savedMessage = find("#gfl-save-status");
+  const playerFilter = find("#gfl-filter-player");
+  const formulaFilter = find("#gfl-filter-formula");
+  const periodFilter = find("#gfl-filter-period");
+  const history = find("#gfl-history-results");
+  const gameForm = find("#gfl-example-form");
+  const appAlert = find("#gfl-app-alert");
+  const playerPicker = find("#gfl-demo-player");
+  const gameMessage = find("#gfl-game-feedback");
+  const confirm = find("#gfl-confirm-game");
+  const teamFields = find("#gfl-team-fields");
+  const teamList = find("#gfl-teams");
+  const winnerLabel = find("#gfl-winner-label");
+  const { mode, winner, date, formula } = gameForm.elements;
+  const profile = find("#gfl-profile-form");
+  const profileMessage = profile.querySelector(".gfl-feedback");
+  const teamByPlayer = new Map();
+  const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeZone: "UTC" });
+  const monthFormat = new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric", timeZone: "UTC" });
+  let currentPlayer = "x-factor";
+  let pendingGame;
+  let state = { players: [], games: [], corrections: [] };
+
+  const demoStorageKey = "golf-fight-league-web-v1";
+
+  function loadDemo() {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(demoStorageKey));
+      if (saved?.version === 1 && saved.players?.length === 8 && Array.isArray(saved.games)) {
+        return { players: saved.players, games: saved.games };
+      }
+    } catch {
+      // The demo also works when browser storage is unavailable.
+    }
+    return globalThis.gflDemoLeague.initialState();
+  }
+
+  let demo = loadDemo();
+
+  function storeDemo(next) {
+    demo = next;
+    try {
+      window.localStorage.setItem(demoStorageKey, JSON.stringify({ version: 1, ...demo }));
+    } catch {
+      // Keep the current session usable when storage is blocked or full.
+    }
+    return demo;
+  }
+
+  function signature(game) {
+    return JSON.stringify([
+      game.date,
+      game.formula,
+      game.mode,
+      game.participants.map(({ playerId, won, team }) => {
+        const teammates = team ? game.participants.filter(p => p.team === team).map(p => p.playerId).sort() : [];
+        return [playerId, won, teammates];
+      }).sort(([a], [b]) => a.localeCompare(b)),
+    ]);
+  }
+
+  async function request(path, { data } = {}) {
+    if (path === "/api/league") return demo;
+    if (path === "/api/games") {
+      const game = recordGame(data);
+      if (demo.games.some(entry => entry.id === game.id)) return demo;
+      if (!data.confirmDistinct && demo.games.some(entry => signature(entry) === signature(game))) {
+        const error = new Error("Une partie identique figure déjà dans l’historique.");
+        error.code = "possible_duplicate";
+        throw error;
+      }
+      return storeDemo({ ...demo, games: [game, ...demo.games] });
+    }
+    if (path === "/api/profile") {
+      const alias = data.alias.trim();
+      if (!alias) throw new Error("Choisis un alias.");
+      if (demo.players.some(player => player.id !== currentPlayer &&
+          player.alias.toLocaleLowerCase("fr") === alias.toLocaleLowerCase("fr"))) {
+        throw new Error("Cet alias est déjà utilisé.");
+      }
+      const players = demo.players.map(player => player.id === currentPlayer
+        ? { ...player, alias, motto: data.motto.trim(), bio: data.bio.trim() }
+        : player);
+      return storeDemo({ ...demo, players });
+    }
+    throw new Error("Cette action n’est pas disponible dans la démonstration.");
+  }
+
+  function announce(message = "", error = false) {
+    appAlert.textContent = message;
+    appAlert.toggleAttribute("data-error", error);
+  }
+
+  function displayDate(value) {
+    return dateFormat.format(new Date(value + "T00:00:00Z"));
+  }
+
+  function alias(id) {
+    return state.players.find((player) => player.id === id)?.alias || id;
+  }
+
+  function plural(count, singular) {
+    return count + " " + singular + (count === 1 ? "" : "s");
+  }
+
+  function winnersText(participants) {
+    return participants
+      .filter((entry) => entry.won)
+      .map((entry) => alias(entry.playerId) + " +" + entry.points)
+      .join(" · ");
+  }
+
+  function sortedGames() {
+    return [...state.games].sort((a, b) => b.date.localeCompare(a.date));
+  }
+
+  function renderHistory() {
+    const filtered = sortedGames().filter((game) =>
+      (!playerFilter.value || game.participants.some((p) => p.playerId === playerFilter.value)) &&
+      (!formulaFilter.value || game.formula === formulaFilter.value) &&
+      game.date.startsWith(periodFilter.value)
+    );
+    history.replaceChildren();
+    if (!filtered.length) {
+      history.textContent = "Aucune confrontation pour ces filtres.";
+      return;
+    }
+    for (const game of filtered) {
+      const article = document.createElement("article");
+      article.className = "gfl-box";
+      const title = document.createElement("h3");
+      title.textContent = game.formula + " · " + displayDate(game.date);
+      const participants = document.createElement("p");
+      participants.className = "gfl-small";
+      if (game.mode === "team") {
+        participants.textContent = ["A", "B"].map((team) =>
+          team + " : " + game.participants.filter((p) => p.team === team).map((p) => alias(p.playerId)).join(", ")
+        ).join(" / ");
+      } else {
+        participants.textContent = game.participants.map((p) => alias(p.playerId)).join(", ");
+      }
+      const result = document.createElement("p");
+      result.className = "gfl-win";
+      result.textContent = winnersText(game.participants);
+      article.append(title, participants, result);
+      history.append(article);
+    }
+  }
+
+  function renderDashboard() {
+    const standings = rank(state.players, state.games);
+    for (const body of root.querySelectorAll("[data-ranking]")) {
+      body.replaceChildren();
+      const isFull = body.dataset.ranking === "full";
+      for (const player of isFull ? standings : standings.slice(0, 4)) {
+        const row = body.insertRow();
+        row.insertCell().textContent = player.rank;
+        const name = document.createElement("th");
+        name.scope = "row";
+        name.textContent = player.alias;
+        row.append(name);
+        row.insertCell().textContent = player.wins;
+        if (isFull) {
+          row.insertCell().textContent = player.played;
+          row.insertCell().textContent = player.rate === null ? "—" : player.rate + " %";
+        }
+      }
+    }
+    const games = sortedGames();
+    const latest = games[0];
+    if (latest) {
+      const latestDate = find("#gfl-last-date");
+      latestDate.dateTime = latest.date;
+      latestDate.textContent = displayDate(latest.date);
+      find("#gfl-last-info").textContent = latest.formula + " · " + plural(latest.participants.length, "joueur");
+      find("#gfl-last-winners").textContent = winnersText(latest.participants);
+    }
+    const playerChoice = playerFilter.value;
+    const periodChoice = periodFilter.value;
+    playerFilter.replaceChildren(new Option("Tous", ""));
+    playerPicker.replaceChildren();
+    for (const player of state.players) {
+      playerFilter.add(new Option(player.alias, player.id));
+      playerPicker.add(new Option(player.alias, player.id));
+      const label = find("#gfl-name-" + player.id);
+      if (label) label.textContent = player.alias;
+    }
+    playerPicker.value = currentPlayer;
+    playerFilter.value = playerChoice;
+    periodFilter.replaceChildren(new Option("Toutes les dates", ""));
+    const months = new Set(games.map((game) => game.date.slice(0, 7)));
+    for (const month of months) periodFilter.add(new Option(monthFormat.format(new Date(month + "-01T00:00:00Z")), month));
+    periodFilter.value = months.has(periodChoice) ? periodChoice : "";
+    renderHistory();
+
+    const me = standings.find((player) => player.id === currentPlayer);
+    if (!me) return;
+    find("#gfl-profile-alias").textContent = me.alias;
+    find("#gfl-profile-stats").textContent = [
+      "Rang " + me.rank,
+      plural(me.wins, "victoire") + " en " + plural(me.played, "partie"),
+      me.rate === null ? null : me.rate + " %",
+    ].filter(Boolean).join(" · ");
+    const stats = find("#gfl-profile-formats");
+    stats.replaceChildren();
+    for (const format of globalThis.gflDemoLeague.formats) {
+      const { wins, played } = summarize(games.filter((game) => game.formula === format), currentPlayer);
+      if (!played) continue;
+      const line = document.createElement("p");
+      line.className = "gfl-small";
+      line.textContent = format + " · " + plural(wins, "victoire") + " en " + plural(played, "partie");
+      stats.append(line);
+    }
+    for (const name of ["alias", "motto", "bio"]) profile.elements[name].value = me[name];
+  }
+
+  function goTo(view, moveFocus) {
+    for (const section of views) section.hidden = section.dataset.view !== view;
+    for (const item of nav) {
+      if (item.dataset.go === view) item.setAttribute("aria-current", "page");
+      else item.removeAttribute("aria-current");
+    }
+    if (moveFocus) {
+      root.querySelector('nav [data-go="' + view + '"]').focus();
+    }
+  }
+
+  for (const button of root.querySelectorAll("[data-go]")) {
+    button.addEventListener("click", () => {
+      if (button.dataset.player) {
+        playerFilter.value = button.dataset.player;
+        formulaFilter.value = "";
+        periodFilter.value = "";
+        renderHistory();
+      }
+      goTo(button.dataset.go, true);
+    });
+  }
+  for (const filter of [playerFilter, formulaFilter, periodFilter]) filter.addEventListener("change", renderHistory);
+
+  const playerList = find("#gfl-players");
+  function createPlayerCheckboxes() {
+    for (const player of state.players) {
+      const label = document.createElement("label");
+      label.className = "gfl-check";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.value = player.id;
+      const name = document.createElement("span");
+      name.id = "gfl-name-" + player.id;
+      name.textContent = player.alias;
+      label.append(input, name);
+      playerList.append(label);
+    }
+  }
+  const selectedPlayers = () => Array.from(playerList.querySelectorAll("input:checked"), (input) => input.value);
+
+  function today() {
+    const parts = new Intl.DateTimeFormat("en", {
+      timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit",
+    }).formatToParts(new Date());
+    return ["year", "month", "day"].map((type) => parts.find((part) => part.type === type).value).join("-");
+  }
+
+  function renderForm() {
+    const selected = selectedPlayers();
+    const byTeam = mode.value === "team";
+    const earlierWinner = winner.value;
+    teamFields.hidden = !byTeam || !selected.length;
+    teamList.replaceChildren();
+    if (byTeam) {
+      for (const id of selected) {
+        const label = document.createElement("label");
+        label.className = "gfl-field";
+        const select = document.createElement("select");
+        select.add(new Option("Équipe A", "A"));
+        select.add(new Option("Équipe B", "B"));
+        select.value = teamByPlayer.get(id) || "A";
+        teamByPlayer.set(id, select.value);
+        select.addEventListener("change", () => teamByPlayer.set(id, select.value));
+        label.append(alias(id), select);
+        teamList.append(label);
+      }
+    }
+    winnerLabel.textContent = byTeam ? "Équipe gagnante" : "Joueur vainqueur";
+    winner.replaceChildren(new Option("Choisir", ""));
+    for (const value of byTeam ? ["A", "B"] : selected) {
+      winner.add(new Option(byTeam ? "Équipe " + value : alias(value), value));
+    }
+    if (Array.from(winner.options).some((option) => option.value === earlierWinner)) winner.value = earlierWinner;
+  }
+
+  function clearGamePreview() {
+    gameMessage.textContent = "";
+    gameMessage.removeAttribute("data-error");
+    confirm.hidden = true;
+    confirm.textContent = "Enregistrer la partie";
+    pendingGame = undefined;
+  }
+
+  playerList.addEventListener("change", renderForm);
+  mode.addEventListener("change", renderForm);
+  gameForm.addEventListener("change", clearGamePreview);
+  gameForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    clearGamePreview();
+    const selected = selectedPlayers();
+    const groups = mode.value === "team"
+      ? ["A", "B"].map((team) => selected.filter((id) => teamByPlayer.get(id) === team))
+      : [selected];
+    try {
+      const identifier = Array.from(crypto.getRandomValues(new Uint32Array(4)), (value) => value.toString(16).padStart(8, "0")).join("");
+      const input = { date: date.value, formula: formula.value, groups, winner: winner.value, id: identifier };
+      gameMessage.textContent = winnersText(recordGame(input).participants);
+      pendingGame = input;
+      confirm.hidden = false;
+      confirm.focus();
+    } catch (error) {
+      gameMessage.setAttribute("data-error", "");
+      gameMessage.textContent = error.message;
+    }
+  });
+
+  confirm.addEventListener("click", async () => {
+    if (!pendingGame || confirm.disabled) return;
+    const input = pendingGame;
+    confirm.disabled = true;
+    try {
+      state = await request("/api/games", { method: "POST", data: input });
+      clearGamePreview();
+      gameForm.reset();
+      teamByPlayer.clear();
+      date.value = today();
+      renderForm();
+      renderDashboard();
+      savedMessage.textContent = "Partie enregistrée. Classement mis à jour.";
+      goTo("home", true);
+    } catch (error) {
+      if (pendingGame !== input) return;
+      if (error.code === "possible_duplicate") {
+        pendingGame = { ...input, confirmDistinct: true };
+        confirm.textContent = "Confirmer une partie distincte";
+      }
+      gameMessage.setAttribute("data-error", "");
+      gameMessage.textContent = error.message;
+    } finally {
+      confirm.disabled = false;
+    }
+  });
+
+  profile.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const fields = new FormData(profile);
+    const button = profile.querySelector('button[type="submit"]');
+    button.disabled = true;
+    try {
+      state = await request("/api/profile", { method: "PATCH", data: Object.fromEntries(fields) });
+      renderDashboard();
+      renderForm();
+      clearGamePreview();
+      profileMessage.textContent = "Fiche enregistrée.";
+      profileMessage.removeAttribute("data-error");
+    } catch (error) {
+      profileMessage.setAttribute("data-error", "");
+      profileMessage.textContent = error.message;
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  playerPicker.addEventListener("change", () => {
+    currentPlayer = playerPicker.value;
+    find("[data-player]").dataset.player = currentPlayer;
+    profileMessage.textContent = "";
+    announce();
+    clearGamePreview();
+    renderDashboard();
+  });
+
+  async function start() {
+    try {
+      state = await request("/api/league");
+      createPlayerCheckboxes();
+      date.value = today();
+      renderForm();
+      renderDashboard();
+      playerPicker.disabled = false;
+      announce();
+    } catch {
+      announce("La démonstration est indisponible. Recharge cette conversation.", true);
+    }
+  }
+
+  start();
+})();
+
+</script>
+</body>
+</html>
