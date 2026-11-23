@@ -26,16 +26,6 @@ function boundedText(value, max, label) {
   return value.trim();
 }
 
-function resultSignature(participants) {
-  return JSON.stringify([...participants]
-    .sort((a, b) => a.playerId.localeCompare(b.playerId))
-    .map(({ playerId, team, won }) => [
-      playerId,
-      won,
-      team ? participants.filter((entry) => entry.team === team).map((entry) => entry.playerId).sort() : null,
-    ]));
-}
-
 export function openLeague(filename) {
   mkdirSync(dirname(filename), { recursive: true, mode: 0o700 });
   const db = new DatabaseSync(filename);
@@ -65,7 +55,7 @@ export function openLeague(filename) {
     CREATE TABLE IF NOT EXISTS participations (
       game_id TEXT NOT NULL REFERENCES games(id),
       player_id TEXT NOT NULL REFERENCES players(id),
-      team TEXT CHECK(team IN ('A', 'B')),
+      team TEXT CHECK(team IN ('A', 'B', 'C')),
       won INTEGER NOT NULL CHECK(won IN (0, 1)),
       points INTEGER NOT NULL CHECK(points >= 0),
       PRIMARY KEY (game_id, player_id)
@@ -93,6 +83,25 @@ export function openLeague(filename) {
       throw error;
     }
   }
+
+  transaction(() => {
+    const table = db.prepare("SELECT sql FROM sqlite_master WHERE name = 'participations'").get();
+    if (!table.sql.includes("'B', 'C'")) {
+      db.exec(`
+        ALTER TABLE participations RENAME TO previous_participations;
+        CREATE TABLE participations (
+          game_id TEXT NOT NULL REFERENCES games(id),
+          player_id TEXT NOT NULL REFERENCES players(id),
+          team TEXT CHECK(team IN ('A', 'B', 'C')),
+          won INTEGER NOT NULL CHECK(won IN (0, 1)),
+          points INTEGER NOT NULL CHECK(points >= 0),
+          PRIMARY KEY (game_id, player_id)
+        );
+        INSERT INTO participations SELECT * FROM previous_participations ORDER BY rowid;
+        DROP TABLE previous_participations;
+      `);
+    }
+  });
 
   const aliasKey = (alias) => alias.normalize("NFC").toLocaleLowerCase("fr");
   const actorExists = db.prepare("SELECT 1 FROM players WHERE id = ?");
@@ -167,9 +176,9 @@ export function openLeague(filename) {
         }
         return snapshot();
       }
-      const signature = resultSignature(game.participants);
+      const signature = league.resultSignature(game.participants);
       if (input.confirmDistinct !== true && sameDay.all(game.date, game.formula, game.mode)
-        .some(({ id }) => resultSignature(getParticipations(id)) === signature)) {
+        .some(({ id }) => league.resultSignature(getParticipations(id)) === signature)) {
         throw new InputError("Une partie identique figure déjà dans l’historique.", 409, "possible_duplicate");
       }
       addGame(game, actor, new Date().toISOString(), submission);
@@ -186,9 +195,7 @@ export function openLeague(filename) {
       if (!existing) throw new InputError("Cette partie est introuvable.", 404);
       if (existing.revision !== revision) throw new InputError("Cette partie a déjà été modifiée. Recharge l’historique.", 409);
       const before = getParticipations(id);
-      const groups = existing.mode === "team"
-        ? ["A", "B"].map((team) => before.filter((entry) => entry.team === team).map((entry) => entry.playerId))
-        : [before.map((entry) => entry.playerId)];
+      const groups = league.groupsFrom(before);
       const corrected = parseGame({ id, date: existing.date, formula: existing.formula, groups, winner });
       if (JSON.stringify(before) === JSON.stringify(corrected.participants)) throw new InputError("Choisis un autre vainqueur.");
 
