@@ -215,7 +215,8 @@
         <p class="gfl-brand">GOLF FIGHT <span>LEAGUE</span></p>
       </div>
       <p class="gfl-small">Prototype local · Données fictives</p>
-      <label class="gfl-field">Profil de test<select id="gfl-demo-player" disabled></select></label>
+      <label class="gfl-field" id="gfl-demo-picker">Profil de test<select id="gfl-demo-player" disabled></select></label>
+      <p id="gfl-signed-in" class="gfl-small" hidden></p>
     </header>
     <nav aria-label="Navigation principale">
       <button type="button" data-go="home" aria-current="page">Accueil</button>
@@ -224,6 +225,14 @@
       <button type="button" data-go="history">Historique</button>
       <button type="button" data-go="profile">Ma fiche</button>
     </nav>
+    <section id="gfl-login" class="gfl-view gfl-stack" hidden>
+      <h2>Connexion à la League</h2>
+      <form class="gfl-stack">
+        <label class="gfl-field">Joueur<select name="player" required></select></label>
+        <label class="gfl-field">Code personnel<input name="code" type="password" autocomplete="current-password" required maxlength="128"></label>
+        <button type="submit" class="gfl-action">Se connecter</button>
+      </form>
+    </section>
     <p id="gfl-app-alert" class="gfl-feedback gfl-app-alert" role="status">Chargement de la League…</p>
 
     <section class="gfl-view gfl-stack" data-view="home" aria-label="Accueil">
@@ -252,13 +261,16 @@
         <div class="gfl-pair">
           <label class="gfl-field">Date<input type="date" name="date" required></label>
           <label class="gfl-field">Formule<select name="formula" required>
-            <option value="">Choisir</option><option>Scramble</option><option>Shamble</option><option>Chouette</option><option>Skins</option><option>Wolf</option>
+            <option value="">Choisir</option><option>Scramble</option><option>Shamble</option><option>Chouette</option><option>Skins</option><option>Wolf</option><option>Match Play</option><option>Foursome</option>
           </select></label>
         </div>
         <fieldset><legend>Participants</legend><div class="gfl-players" id="gfl-players"></div></fieldset>
         <label class="gfl-field">Type de résultat<select name="mode">
           <option value="single">Individuel</option><option value="team">Par équipe</option>
         </select></label>
+        <label class="gfl-field" id="gfl-team-count" hidden>Nombre d’équipes
+          <select name="teamCount"><option value="2">2 équipes</option><option value="3">3 équipes</option></select>
+        </label>
         <fieldset id="gfl-team-fields"><legend>Équipes</legend><div class="gfl-teams" id="gfl-teams"></div></fieldset>
         <label class="gfl-field"><span id="gfl-winner-label">Équipe gagnante</span><select name="winner" required></select></label>
         <button class="gfl-action" type="submit">Vérifier le résultat</button>
@@ -280,7 +292,7 @@
       <div class="gfl-pair">
         <label class="gfl-field">Joueur<select id="gfl-filter-player"><option value="">Tous</option></select></label>
         <label class="gfl-field">Formule<select id="gfl-filter-formula">
-          <option value="">Toutes</option><option>Scramble</option><option>Shamble</option><option>Chouette</option><option>Skins</option><option>Wolf</option>
+          <option value="">Toutes</option><option>Scramble</option><option>Shamble</option><option>Chouette</option><option>Skins</option><option>Wolf</option><option>Match Play</option><option>Foursome</option>
         </select></label>
       </div>
       <label class="gfl-field">Période<select id="gfl-filter-period">

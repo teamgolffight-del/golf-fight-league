@@ -1,6 +1,7 @@
 (() => {
-  const { rank, recordGame, summarize } = globalThis.league;
+  const { rank, recordGame, summarize, teamCodes, assignTeams, initialState } = globalThis.league;
   const root = document.querySelector("#gfl-preview");
+  const shared = root.dataset.storage === "sheets";
   const find = (selector) => root.querySelector(selector);
   const nav = root.querySelectorAll("nav [data-go]");
   const views = root.querySelectorAll("[data-view]");
@@ -12,13 +13,16 @@
   const gameForm = find("#gfl-example-form");
   const appAlert = find("#gfl-app-alert");
   const playerPicker = find("#gfl-demo-player");
+  const login = find("#gfl-login");
+  const loginForm = login.querySelector("form");
   const exportButton = find("#gfl-export");
   const gameMessage = find("#gfl-game-feedback");
   const confirm = find("#gfl-confirm-game");
+  const teamCountField = find("#gfl-team-count");
   const teamFields = find("#gfl-team-fields");
   const teamList = find("#gfl-teams");
   const winnerLabel = find("#gfl-winner-label");
-  const { mode, winner, date, formula } = gameForm.elements;
+  const { mode, winner, date, formula, teamCount } = gameForm.elements;
   const profile = find("#gfl-profile-form");
   const profileMessage = profile.querySelector(".gfl-feedback");
   const teamByPlayer = new Map();
@@ -28,18 +32,27 @@
   let currentPlayer = "x-factor";
   let pendingGame;
   let state = { players: [], games: [], corrections: [] };
+  let refreshing = false;
 
   async function request(path, { method = "GET", data } = {}) {
-    const headers = { "X-League-Demo-Player": currentPlayer };
+    const headers = shared ? {} : { "X-League-Demo-Player": currentPlayer };
     if (data !== undefined) headers["Content-Type"] = "application/json";
-    const response = await fetch(path, {
-      method,
-      headers,
-      body: data === undefined ? undefined : JSON.stringify(data),
-    });
-    const result = await response.json();
+    const endpoint = shared ? "/api/league?route=" + encodeURIComponent(path) : path;
+    let response;
+    let result;
+    try {
+      response = await fetch(endpoint, {
+        method,
+        headers,
+        body: data === undefined ? undefined : JSON.stringify(data),
+      });
+      result = await response.json();
+    } catch {
+      throw new Error("Connexion indisponible. Vérifie le réseau puis réessaie.");
+    }
     if (!response.ok) {
       const error = new Error(result.error || "L’opération a échoué.");
+      error.status = response.status;
       error.code = result.code;
       throw error;
     }
@@ -93,7 +106,7 @@
       const participants = document.createElement("p");
       participants.className = "gfl-small";
       if (game.mode === "team") {
-        participants.textContent = ["A", "B"].map((team) =>
+        participants.textContent = teamCodes.filter((team) => game.participants.some((p) => p.team === team)).map((team) =>
           team + " : " + game.participants.filter((p) => p.team === team).map((p) => alias(p.playerId)).join(", ")
         ).join(" / ");
       } else {
@@ -128,9 +141,10 @@
     const form = details.querySelector("form");
     const choice = form.elements.winner;
     if (game.mode === "team") {
-      const losingTeam = game.participants.find((entry) => !entry.won).team;
-      const members = game.participants.filter((entry) => entry.team === losingTeam).map((entry) => alias(entry.playerId));
-      choice.add(new Option("Équipe " + losingTeam + " · " + members.join(", "), losingTeam));
+      for (const team of new Set(game.participants.filter((entry) => !entry.won).map((entry) => entry.team))) {
+        const members = game.participants.filter((entry) => entry.team === team).map((entry) => alias(entry.playerId));
+        choice.add(new Option("Équipe " + team + " · " + members.join(", "), team));
+      }
     } else {
       for (const entry of game.participants.filter((entry) => !entry.won)) {
         choice.add(new Option(alias(entry.playerId), entry.playerId));
@@ -252,13 +266,15 @@
         renderHistory();
       }
       goTo(button.dataset.go, true);
+      if (shared) refreshLeague();
     });
   }
   for (const filter of [playerFilter, formulaFilter, periodFilter]) filter.addEventListener("change", renderHistory);
 
   const playerList = find("#gfl-players");
   function createPlayerCheckboxes() {
-    for (const player of state.players) {
+    playerList.replaceChildren();
+    for (const player of state.players.filter((entry) => entry.active !== false)) {
       const label = document.createElement("label");
       label.className = "gfl-check";
       const input = document.createElement("input");
@@ -280,21 +296,29 @@
     return ["year", "month", "day"].map((type) => parts.find((part) => part.type === type).value).join("-");
   }
 
+  const fixedTeams = () => formula.value === "Match Play" || formula.value === "Foursome";
+  const selectedTeams = () => teamCodes.slice(0, fixedTeams() ? 2 : Number(teamCount.value));
+
   function renderForm() {
     const selected = selectedPlayers();
+    mode.disabled = formula.value === "Foursome";
+    if (mode.disabled) mode.value = "team";
+    mode.options[0].textContent = formula.value === "Match Play" ? "1 contre 1" : "Individuel";
+    mode.options[1].textContent = fixedTeams() ? "2 contre 2" : "Par équipe";
     const byTeam = mode.value === "team";
+    const teams = selectedTeams();
     const earlierWinner = winner.value;
+    teamCountField.hidden = !byTeam || fixedTeams();
     teamFields.hidden = !byTeam || !selected.length;
     teamList.replaceChildren();
     if (byTeam) {
+      assignTeams(selected, teams, teamByPlayer);
       for (const id of selected) {
         const label = document.createElement("label");
         label.className = "gfl-field";
         const select = document.createElement("select");
-        select.add(new Option("Équipe A", "A"));
-        select.add(new Option("Équipe B", "B"));
-        select.value = teamByPlayer.get(id) || "A";
-        teamByPlayer.set(id, select.value);
+        for (const team of teams) select.add(new Option("Équipe " + team, team));
+        select.value = teamByPlayer.get(id);
         select.addEventListener("change", () => teamByPlayer.set(id, select.value));
         label.append(alias(id), select);
         teamList.append(label);
@@ -302,7 +326,7 @@
     }
     winnerLabel.textContent = byTeam ? "Équipe gagnante" : "Joueur vainqueur";
     winner.replaceChildren(new Option("Choisir", ""));
-    for (const value of byTeam ? ["A", "B"] : selected) {
+    for (const value of byTeam ? teams : selected) {
       winner.add(new Option(byTeam ? "Équipe " + value : alias(value), value));
     }
     if (Array.from(winner.options).some((option) => option.value === earlierWinner)) winner.value = earlierWinner;
@@ -318,18 +342,23 @@
 
   playerList.addEventListener("change", renderForm);
   mode.addEventListener("change", renderForm);
+  formula.addEventListener("change", renderForm);
+  teamCount.addEventListener("change", () => {
+    teamByPlayer.clear();
+    renderForm();
+  });
   gameForm.addEventListener("change", clearGamePreview);
   gameForm.addEventListener("submit", (event) => {
     event.preventDefault();
     clearGamePreview();
     const selected = selectedPlayers();
     const groups = mode.value === "team"
-      ? ["A", "B"].map((team) => selected.filter((id) => teamByPlayer.get(id) === team))
+      ? selectedTeams().map((team) => selected.filter((id) => teamByPlayer.get(id) === team))
       : [selected];
     try {
       const identifier = Array.from(crypto.getRandomValues(new Uint32Array(4)), (value) => value.toString(16).padStart(8, "0")).join("");
       const input = { date: date.value, formula: formula.value, groups, winner: winner.value, id: identifier };
-      gameMessage.textContent = winnersText(recordGame(input).participants);
+      gameMessage.textContent = winnersText(recordGame(input, state.players).participants);
       pendingGame = input;
       confirm.hidden = false;
       confirm.focus();
@@ -412,17 +441,84 @@
     }
   });
 
+  function showLeague(initial) {
+    state = initial;
+    if (shared) {
+      currentPlayer = initial.viewerId;
+      login.hidden = true;
+      root.querySelector("nav").hidden = false;
+      const member = find("#gfl-signed-in");
+      member.hidden = false;
+      member.textContent = "Connecté · " + alias(currentPlayer);
+      find("[data-player]").dataset.player = currentPlayer;
+      goTo("home", false);
+    }
+    createPlayerCheckboxes();
+    date.value = today();
+    renderForm();
+    renderDashboard();
+    playerPicker.disabled = shared;
+    announce();
+  }
+
+  function canRefresh() {
+    const view = find('nav [aria-current="page"]')?.dataset.go;
+    return !document.hidden && state.viewerId && ["home", "ranking", "history"].includes(view) &&
+      (view !== "history" || !history.querySelector("details[open]"));
+  }
+
+  async function refreshLeague() {
+    if (refreshing || !canRefresh()) return;
+    const previous = state;
+    refreshing = true;
+    try {
+      const latest = await request("/api/league");
+      if (state !== previous || !canRefresh()) return;
+      if (JSON.stringify(latest) !== JSON.stringify(previous)) {
+        state = latest;
+        renderDashboard();
+      }
+      if (appAlert.hasAttribute("data-error")) announce();
+    } catch (error) {
+      announce(error.message, true);
+    } finally {
+      refreshing = false;
+    }
+  }
+
+  if (shared) {
+    find("#gfl-demo-picker").hidden = true;
+    root.querySelector("nav").hidden = true;
+    for (const section of views) section.hidden = true;
+    for (const member of initialState().players) loginForm.elements.player.add(new Option(member.alias, member.id));
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = loginForm.querySelector("button");
+      button.disabled = true;
+      const { player, code } = Object.fromEntries(new FormData(loginForm));
+      try {
+        showLeague(await request("/api/session", { method: "POST", data: { player, code } }));
+      } catch (error) {
+        announce(error.message, true);
+      } finally {
+        loginForm.elements.code.value = "";
+        button.disabled = false;
+      }
+    });
+    document.addEventListener("visibilitychange", refreshLeague);
+    window.setInterval(refreshLeague, 60000);
+  }
+
   async function start() {
     try {
-      state = await request("/api/league");
-      createPlayerCheckboxes();
-      date.value = today();
-      renderForm();
-      renderDashboard();
-      playerPicker.disabled = false;
-      announce();
-    } catch {
-      announce("La League est indisponible. Démarre le serveur local et recharge la page.", true);
+      showLeague(await request("/api/league"));
+    } catch (error) {
+      if (shared && error.status === 401) {
+        login.hidden = false;
+        announce();
+      } else {
+        announce(shared ? error.message : "La League est indisponible. Démarre le serveur local et recharge la page.", true);
+      }
     }
   }
 

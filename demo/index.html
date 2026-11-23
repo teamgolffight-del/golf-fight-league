@@ -252,13 +252,16 @@
         <div class="gfl-pair">
           <label class="gfl-field">Date<input type="date" name="date" required></label>
           <label class="gfl-field">Formule<select name="formula" required>
-            <option value="">Choisir</option><option>Scramble</option><option>Shamble</option><option>Chouette</option><option>Skins</option><option>Wolf</option>
+            <option value="">Choisir</option><option>Scramble</option><option>Shamble</option><option>Chouette</option><option>Skins</option><option>Wolf</option><option>Match Play</option><option>Foursome</option>
           </select></label>
         </div>
         <fieldset><legend>Participants</legend><div class="gfl-players" id="gfl-players"></div></fieldset>
         <label class="gfl-field">Type de résultat<select name="mode">
           <option value="single">Individuel</option><option value="team">Par équipe</option>
         </select></label>
+        <label class="gfl-field" id="gfl-team-count" hidden>Nombre d’équipes
+          <select name="teamCount"><option value="2">2 équipes</option><option value="3">3 équipes</option></select>
+        </label>
         <fieldset id="gfl-team-fields"><legend>Équipes</legend><div class="gfl-teams" id="gfl-teams"></div></fieldset>
         <label class="gfl-field"><span id="gfl-winner-label">Équipe gagnante</span><select name="winner" required></select></label>
         <button class="gfl-action" type="submit">Vérifier le résultat</button>
@@ -280,7 +283,7 @@
       <div class="gfl-pair">
         <label class="gfl-field">Joueur<select id="gfl-filter-player"><option value="">Tous</option></select></label>
         <label class="gfl-field">Formule<select id="gfl-filter-formula">
-          <option value="">Toutes</option><option>Scramble</option><option>Shamble</option><option>Chouette</option><option>Skins</option><option>Wolf</option>
+          <option value="">Toutes</option><option>Scramble</option><option>Shamble</option><option>Chouette</option><option>Skins</option><option>Wolf</option><option>Match Play</option><option>Foursome</option>
         </select></label>
       </div>
       <label class="gfl-field">Période<select id="gfl-filter-period">
@@ -309,87 +312,10 @@
   </div>
 </div>
 
+<script src="league-data.js"></script>
 <script>
 (() => {
-  const formats = ["Scramble", "Shamble", "Chouette", "Skins", "Wolf"];
-  const initialPlayers = [
-    { id: "x-factor", alias: "X Factor" },
-    { id: "captain", alias: "Captain" },
-    { id: "foxy", alias: "Foxy" },
-    { id: "nitro", alias: "Nitro" },
-    { id: "lady", alias: "Lady" },
-    { id: "fyzio", alias: "Fyzio" },
-    { id: "sniper", alias: "Sniper" },
-    { id: "kid", alias: "Kid" },
-  ];
-  const examples = [
-    { date: "2026-11-12", formula: "Scramble", groups: [["captain", "foxy"], ["x-factor", "nitro"]], winner: "A" },
-    { date: "2026-11-08", formula: "Wolf", groups: [["x-factor", "captain", "lady", "fyzio", "sniper"]], winner: "x-factor" },
-    { date: "2026-11-01", formula: "Skins", groups: [["nitro", "foxy", "sniper", "kid"]], winner: "nitro" },
-    { date: "2026-10-26", formula: "Scramble", groups: [["captain", "foxy"], ["lady", "kid"]], winner: "A" },
-  ];
-
-  function recordGame({ id, date, formula, groups, winner }) {
-    const timestamp = new Date(typeof date === "string" ? date + "T00:00:00Z" : NaN);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(timestamp.valueOf()) || timestamp.toISOString().slice(0, 10) !== date) {
-      throw new Error("Choisis une date valide.");
-    }
-    if (!formats.includes(formula)) throw new Error("Choisis une formule.");
-    if (!Array.isArray(groups) || !groups.every(Array.isArray)) throw new Error("Choisis les participants.");
-    const participants = groups.flat();
-    if (participants.length < 2) throw new Error("Choisis au moins deux participants.");
-    if (participants.some((id) => !initialPlayers.some((player) => player.id === id))) {
-      throw new Error("Choisis les participants parmi les huit joueurs.");
-    }
-    if (new Set(participants).size !== participants.length) throw new Error("Chaque joueur ne peut participer qu’une fois.");
-    const isTeam = groups.length > 1;
-    if (isTeam && (groups.length !== 2 || groups.some((group) => group.length === 0))) {
-      throw new Error("Répartis les participants dans les deux équipes.");
-    }
-    const winners = isTeam ? groups[["A", "B"].indexOf(winner)] : participants.includes(winner) ? [winner] : [];
-    if (!winners?.length) throw new Error("Choisis le vainqueur.");
-    return {
-      id,
-      date,
-      formula,
-      mode: isTeam ? "team" : "single",
-      participants: groups.flatMap((group, index) => group.map((playerId) => ({
-        playerId,
-        team: isTeam ? ["A", "B"][index] : null,
-        won: winners.includes(playerId),
-        points: winners.includes(playerId) ? 1 : 0,
-      }))),
-    };
-  }
-
-  function summarize(games, playerId) {
-    const results = games.flatMap((game) => game.participants).filter((entry) => entry.playerId === playerId);
-    const wins = results.filter((entry) => entry.won).length;
-    return { wins, played: results.length, rate: results.length ? Math.round(wins * 100 / results.length) : null };
-  }
-
-  function rank(players, games) {
-    const standings = players.map((player) => ({ ...player, ...summarize(games, player.id) }));
-    standings.sort((a, b) => b.wins - a.wins || a.alias.localeCompare(b.alias, "fr"));
-    return standings.map((player) => ({
-      ...player,
-      rank: standings.findIndex((entry) => entry.wins === player.wins) + 1,
-    }));
-  }
-
-  function initialState() {
-    return {
-      players: initialPlayers.map((player) => ({ ...player, motto: "", bio: "" })),
-      games: examples.map((game, index) => recordGame({ ...game, id: "demo-" + index })),
-    };
-  }
-
-  const league = { formats, recordGame, summarize, rank, initialState };
-  globalThis.gflDemoLeague = league;
-})();
-
-(() => {
-  const { rank, recordGame, summarize } = globalThis.gflDemoLeague;
+  const { rank, recordGame, summarize, teamCodes, assignTeams, resultSignature } = globalThis.league;
   const root = document.getElementById("gfl-inline-demo");
   const find = (selector) => root.querySelector(selector);
   const nav = root.querySelectorAll("nav [data-go]");
@@ -404,10 +330,11 @@
   const playerPicker = find("#gfl-demo-player");
   const gameMessage = find("#gfl-game-feedback");
   const confirm = find("#gfl-confirm-game");
+  const teamCountField = find("#gfl-team-count");
   const teamFields = find("#gfl-team-fields");
   const teamList = find("#gfl-teams");
   const winnerLabel = find("#gfl-winner-label");
-  const { mode, winner, date, formula } = gameForm.elements;
+  const { mode, winner, date, formula, teamCount } = gameForm.elements;
   const profile = find("#gfl-profile-form");
   const profileMessage = profile.querySelector(".gfl-feedback");
   const teamByPlayer = new Map();
@@ -428,7 +355,7 @@
     } catch {
       // The demo also works when browser storage is unavailable.
     }
-    return globalThis.gflDemoLeague.initialState();
+    return globalThis.league.initialState();
   }
 
   let demo = loadDemo();
@@ -448,10 +375,7 @@
       game.date,
       game.formula,
       game.mode,
-      game.participants.map(({ playerId, won, team }) => {
-        const teammates = team ? game.participants.filter(p => p.team === team).map(p => p.playerId).sort() : [];
-        return [playerId, won, teammates];
-      }).sort(([a], [b]) => a.localeCompare(b)),
+      resultSignature(game.participants),
     ]);
   }
 
@@ -529,7 +453,7 @@
       const participants = document.createElement("p");
       participants.className = "gfl-small";
       if (game.mode === "team") {
-        participants.textContent = ["A", "B"].map((team) =>
+        participants.textContent = teamCodes.filter((team) => game.participants.some((p) => p.team === team)).map((team) =>
           team + " : " + game.participants.filter((p) => p.team === team).map((p) => alias(p.playerId)).join(", ")
         ).join(" / ");
       } else {
@@ -601,7 +525,7 @@
     ].filter(Boolean).join(" · ");
     const stats = find("#gfl-profile-formats");
     stats.replaceChildren();
-    for (const format of globalThis.gflDemoLeague.formats) {
+    for (const format of globalThis.league.formats) {
       const { wins, played } = summarize(games.filter((game) => game.formula === format), currentPlayer);
       if (!played) continue;
       const line = document.createElement("p");
@@ -663,21 +587,29 @@
     return ["year", "month", "day"].map((type) => parts.find((part) => part.type === type).value).join("-");
   }
 
+  const fixedTeams = () => formula.value === "Match Play" || formula.value === "Foursome";
+  const selectedTeams = () => teamCodes.slice(0, fixedTeams() ? 2 : Number(teamCount.value));
+
   function renderForm() {
     const selected = selectedPlayers();
+    mode.disabled = formula.value === "Foursome";
+    if (mode.disabled) mode.value = "team";
+    mode.options[0].textContent = formula.value === "Match Play" ? "1 contre 1" : "Individuel";
+    mode.options[1].textContent = fixedTeams() ? "2 contre 2" : "Par équipe";
     const byTeam = mode.value === "team";
+    const teams = selectedTeams();
     const earlierWinner = winner.value;
+    teamCountField.hidden = !byTeam || fixedTeams();
     teamFields.hidden = !byTeam || !selected.length;
     teamList.replaceChildren();
     if (byTeam) {
+      assignTeams(selected, teams, teamByPlayer);
       for (const id of selected) {
         const label = document.createElement("label");
         label.className = "gfl-field";
         const select = document.createElement("select");
-        select.add(new Option("Équipe A", "A"));
-        select.add(new Option("Équipe B", "B"));
-        select.value = teamByPlayer.get(id) || "A";
-        teamByPlayer.set(id, select.value);
+        for (const team of teams) select.add(new Option("Équipe " + team, team));
+        select.value = teamByPlayer.get(id);
         select.addEventListener("change", () => teamByPlayer.set(id, select.value));
         label.append(alias(id), select);
         teamList.append(label);
@@ -685,7 +617,7 @@
     }
     winnerLabel.textContent = byTeam ? "Équipe gagnante" : "Joueur vainqueur";
     winner.replaceChildren(new Option("Choisir", ""));
-    for (const value of byTeam ? ["A", "B"] : selected) {
+    for (const value of byTeam ? teams : selected) {
       winner.add(new Option(byTeam ? "Équipe " + value : alias(value), value));
     }
     if (Array.from(winner.options).some((option) => option.value === earlierWinner)) winner.value = earlierWinner;
@@ -701,13 +633,18 @@
 
   playerList.addEventListener("change", renderForm);
   mode.addEventListener("change", renderForm);
+  formula.addEventListener("change", renderForm);
+  teamCount.addEventListener("change", () => {
+    teamByPlayer.clear();
+    renderForm();
+  });
   gameForm.addEventListener("change", clearGamePreview);
   gameForm.addEventListener("submit", (event) => {
     event.preventDefault();
     clearGamePreview();
     const selected = selectedPlayers();
     const groups = mode.value === "team"
-      ? ["A", "B"].map((team) => selected.filter((id) => teamByPlayer.get(id) === team))
+      ? selectedTeams().map((team) => selected.filter((id) => teamByPlayer.get(id) === team))
       : [selected];
     try {
       const identifier = Array.from(crypto.getRandomValues(new Uint32Array(4)), (value) => value.toString(16).padStart(8, "0")).join("");
