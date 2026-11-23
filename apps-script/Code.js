@@ -6,6 +6,8 @@ const TABLES = {
   Corrections: "correction_id partie_id date_correction acteur_id champ_modifie avant_json apres_json raison revision_avant revision_apres",
   Saisons: "saison_id libelle debut fin actif",
 };
+const LOGIN_LIMIT = 5;
+const LOGIN_WINDOW_SECONDS = 15 * 60;
 
 class LeagueError extends Error {
   constructor(message, status = 400, code) {
@@ -63,15 +65,37 @@ function doPost(event) {
     if (cache.get(nonce)) throw new LeagueError("Cette requête a déjà été traitée.", 409);
     cache.put(nonce, "1", 300);
 
+    if (action === "login") guardLogin(cache, actor, data?.client);
     const book = SpreadsheetApp.openById(config.GFL_SPREADSHEET_ID);
-    const result = operate(book, action, actor, data, id);
+    const result = operate(book, action === "login" ? "snapshot" : action, actor, data, id);
     return respond({ ok: true, data: result });
   } catch (error) {
-    if (error instanceof LeagueError) return respond({ ok: false, status: error.status, error: error.message, code: error.code });
+    if (error instanceof LeagueError) {
+      return respond({ ok: false, status: error.status, error: error.message, code: error.code, retryAfter: error.retryAfter });
+    }
     console.error(error.name || "Sheets error");
     return respond({ ok: false, status: 502, error: "Google Sheets est momentanément indisponible." });
   } finally {
     if (lock?.hasLock()) lock.releaseLock();
+  }
+}
+
+function guardLogin(cache, actor, client) {
+  if (typeof client !== "string" || !/^[a-f0-9]{64}$/.test(client)) throw new LeagueError("Requête invalide.");
+  const key = "login:" + client;
+  const now = Math.floor(Date.now() / 1000);
+  let burst = JSON.parse(cache.get(key) || "null");
+  if (!burst || burst.ending <= now) burst = { failures: 0, ending: now + LOGIN_WINDOW_SECONDS };
+  const remaining = burst.ending - now;
+  if (burst.failures >= LOGIN_LIMIT) {
+    const error = new LeagueError("Trop de tentatives. Réessaie dans quelques minutes.", 429, "too_many_attempts");
+    error.retryAfter = remaining;
+    throw error;
+  }
+  if (!actor) {
+    burst.failures++;
+    cache.put(key, JSON.stringify(burst), remaining);
+    throw new LeagueError("Profil ou code incorrect.", 401);
   }
 }
 

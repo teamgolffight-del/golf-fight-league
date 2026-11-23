@@ -1,4 +1,5 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { isIP } from "node:net";
 import league from "../dist/league-data.js";
 
 const cookieName = "__Host-gfl-session";
@@ -81,8 +82,9 @@ async function sendToSheets(config, action, actor, data, id, fetcher) {
   if (!result.ok) throw new Error("Apps Script HTTP " + result.status);
   const body = await result.json();
   if (body.ok === true) return response({ ...body.data, viewerId: actor });
-  const status = [400, 403, 404, 409, 502, 503].includes(body.status) ? body.status : 502;
-  return response({ error: body.error || "Synchronisation indisponible.", code: body.code }, status);
+  const status = [400, 401, 403, 404, 409, 429, 502, 503].includes(body.status) ? body.status : 502;
+  const headers = status === 429 ? { "Retry-After": String(body.retryAfter) } : {};
+  return response({ error: body.error || "Synchronisation indisponible.", code: body.code }, status, headers);
 }
 
 export async function handleLeagueRequest(request, env = process.env, fetcher = fetch) {
@@ -104,12 +106,13 @@ export async function handleLeagueRequest(request, env = process.env, fetcher = 
   }
   if (login) {
     const { player, code } = data;
-    if (!memberIds.has(player) || typeof code !== "string" || code.length > 128 ||
-        !equal(config.codes[player], digest(code.trim()))) return response({ error: "Profil ou code incorrect." }, 401);
-    actor = player;
-    const result = await syncSafely(config, "snapshot", actor, undefined, undefined, fetcher);
+    const verified = memberIds.has(player) && typeof code === "string" && code.length <= 128 &&
+      equal(config.codes[player], digest(code.trim()));
+    const ip = request.headers.get("x-vercel-forwarded-for");
+    const client = mac(config.sessionSecret, "login:" + (isIP(ip || "") ? ip : "unknown"));
+    const result = await syncSafely(config, "login", verified ? player : undefined, { client }, undefined, fetcher);
     if (!result.ok) return result;
-    return response(await result.json(), 200, { "Set-Cookie": sessionHeader(config, actor) });
+    return response(await result.json(), 200, { "Set-Cookie": sessionHeader(config, player) });
   }
 
   const correction = method === "PATCH" && /^\/api\/games\/([a-z0-9-]{1,80})$/.exec(path);

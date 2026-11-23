@@ -47,6 +47,7 @@ function createFixture(backup) {
   let busy = false;
   let failWrite = false;
   let dropResponse = false;
+  let openCount = 0;
   const context = vm.createContext({
     PropertiesService: { getScriptProperties: () => ({ getProperties: () => config }) },
     ContentService: { MimeType: { JSON: "json" }, createTextOutput: (value) => ({ setMimeType: () => value }) },
@@ -63,7 +64,7 @@ function createFixture(backup) {
       return { tryLock: acquire, waitLock: () => assert(acquire()), hasLock: () => owned, releaseLock: () => { held = false; owned = false; } };
     } },
     CacheService: { getScriptCache: () => ({ get: (key) => nonceCache.get(key), put: (key, value) => nonceCache.set(key, value) }) },
-    SpreadsheetApp: { openById: (id) => { assert.equal(id, "fixture"); assert(held); return book; } },
+    SpreadsheetApp: { openById: (id) => { assert.equal(id, "fixture"); assert(held); openCount++; return book; } },
     Sheets: { Spreadsheets: {
       Values: { batchGet: (id, { ranges }) => {
         assert.equal(id, "fixture");
@@ -107,6 +108,7 @@ function createFixture(backup) {
   return {
     fetcher, posts, requests, callScript, rows: (name) => tables[name],
     backup: () => structuredClone(tables),
+    openCount: () => openCount,
     seedFoursome: () => context.ajouterFoursome(), config,
     setBusy: (value) => { busy = value; }, setFailedWrite: (value) => { failWrite = value; },
     setDropResponse: (value) => { dropResponse = value; },
@@ -162,6 +164,31 @@ test("Règles Match Play, Foursome, troisième équipe et Wild Cards", () => {
   assert.equal(league.rank(roster, [invited]).length, 8);
 });
 
+test("Les échecs de connexion sont plafonnés par adresse sans ouvrir le tableur", async () => {
+  const store = createFixture();
+  const account = client(store.fetcher);
+  const blockedIp = { "x-vercel-forwarded-for": "192.0.2.10" };
+  const login = (player, code, headers = blockedIp) => account.send(
+    "/api/session", "POST", { player, code }, "https://league.test", headers,
+  );
+  for (const player of ["kid", "captain", "intrus", "nitro", "x-factor"]) {
+    const rejected = await login(player, "incorrect");
+    assert.equal(rejected.status, 401);
+    assert.equal(rejected.headers.has("set-cookie"), false);
+  }
+  const throttled = await login("kid", codeFor("kid"), { ...blockedIp, "x-forwarded-for": "192.0.2.20" });
+  assert.equal(throttled.status, 429);
+  assert.ok(Number(throttled.headers.get("retry-after")) > 0 && Number(throttled.headers.get("retry-after")) <= 900);
+  assert.equal(throttled.headers.has("set-cookie"), false);
+  assert.equal(store.openCount(), 0);
+  for (const body of store.posts) {
+    assert.doesNotMatch(body, /incorrect|192\.0\.2\.10|code-de-test-non-reutilisable/);
+  }
+  const allowed = await login("kid", codeFor("kid"), { "x-vercel-forwarded-for": "192.0.2.20" });
+  assert.equal(allowed.status, 200);
+  assert.equal(allowed.headers.has("set-cookie"), true);
+});
+
 test("Deux sessions partagent les écritures, les doublons et les corrections avec le référentiel", async () => {
   const store = createFixture();
   store.seedFoursome();
@@ -180,7 +207,7 @@ test("Deux sessions partagent les écritures, les doublons et les corrections av
     assert.match(signin.headers.get("set-cookie"), /Secure; HttpOnly; SameSite=Strict/);
   }
   assert.equal(store.callScript(store.posts[0]).status, 409);
-  const tampered = JSON.parse(store.posts[0]);
+  const tampered = JSON.parse(store.posts[1]);
   tampered.payload = tampered.payload.replace('"kid"', '"x-factor"');
   assert.equal(store.callScript(JSON.stringify(tampered)).status, 403);
   assert.equal((await kid.send("/api/games", "POST", {}, "https://other.test")).status, 403);
